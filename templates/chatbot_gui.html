@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChatBot GUI</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1e1e1e; /* Dark background */
+            color: #fff; /* Text color */
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .chat-container {
+            width: 600px; /* Adjusted width */
+            height: 700px; /* Adjusted height */
+            border-radius: 20px;
+            background-color: #2e2e2e; /* Light black background */
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.3); /* Box shadow for depth */
+            display: flex;
+            flex-direction: column;
+        }
+        .chat-header, .chat-footer {
+            padding: 15px;
+            background-color: #1e1e1e; /* Header and footer background */
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+            border-bottom: 1px solid #333; /* Separator line */
+        }
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+        }
+        .user-message, .bot-message {
+            margin-bottom: 10px;
+            padding: 8px;
+            border-radius: 8px;
+        }
+        .user-message {
+            background-color: #007bff; /* User message color */
+            color: #fff; /* Text color */
+        }
+        .bot-message {
+            background-color: #6c757d; /* Bot message color */
+            color: #fff; /* Text color */
+        }
+        #user-input {
+            width: calc(100% - 85px); /* Adjusted width */
+            padding: 12px;
+            border: none;
+            background-color: #333; /* Input background */
+            color: #fff; /* Text color */
+            border-bottom-left-radius: 20px;
+            outline: none;
+        }
+        #send-button {
+            width: 100px; /* Adjusted width */
+            padding: 12px;
+            border: none;
+            background-color: #007bff; /* Send button color */
+            color: #fff; /* Text color */
+            border-bottom-right-radius: 20px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-left: -4px; /* Adjusted position */
+        }
+        #send-button:hover {
+            background-color: #0056b3; /* Hover color */
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h1 style="margin: 0;">ChatBot</h1>
+        </div>
+        <div class="chat-messages" id="chat-messages">
+            <!-- Chat messages will be displayed here -->
+        </div>
+        <div class="chat-footer">
+            <input type="text" id="user-input" placeholder="Type your message..." onkeydown="if (event.keyCode === 13) sendMessage(event)">
+            <button id="send-button" onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        function sendMessage(event) {
+            if (event) {
+                event.preventDefault();
+            }
+            var userInput = document.getElementById("user-input").value;
+            var chatMessages = document.getElementById("chat-messages");
+
+            // Display user message
+            chatMessages.innerHTML += '<div class="user-message">You: ' + userInput + '</div>';
+
+            // Send user input to backend
+            fetch('/send_message', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'user_input=' + encodeURIComponent(userInput)
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Display bot response
+                chatMessages.innerHTML += '<div class="bot-message">Bot: ' + data.bot_response + '</div>';
+
+                // Scroll to bottom of chat messages
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+
+            // Clear user input field
+            document.getElementById("user-input").value = "";
+        }
+    </script>
+</body>
+</html>
